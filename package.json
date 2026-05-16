@@ -1,0 +1,18 @@
+{
+  "name": "repo-image-scanner",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "bun run src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "0.94.0",
+    "sharp": "^0.34.5"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/sharp": "^0.32.0",
+    "typescript": "5.8.3"
+  }
+}
