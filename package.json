@@ -1,13 +1,15 @@
 {
-  "name": "repo-image-scanner",
-  "module": "src/index.ts",
+  "name": "recipe-vision",
+  "module": "src/recipe-vision/index.ts",
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run src/index.ts"
+    "scan-images": "bun run src/recipe-vision/index.ts",
+    "generate-pdf": "bun run src/recipe-pdf/index.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.94.0",
+    "playwright": "^1.54.2",
     "sharp": "^0.34.5"
   },
   "devDependencies": {

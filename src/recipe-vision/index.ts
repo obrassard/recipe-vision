@@ -1,6 +1,7 @@
 import type { JSONOutputFormat } from "@anthropic-ai/sdk/resources/messages";
 import { findImages } from "./images";
 import { createImageMessage } from "./claude";
+import path from "node:path";
 type JsonSchema = JSONOutputFormat["schema"];
 
 export type Recipe = {
@@ -74,14 +75,17 @@ Exemples :
 `;
 
 async function main() {
-  const repositoryPath = process.argv[2];
-
-  if (!repositoryPath) {
-    console.error("Usage: bun run src/index.ts <repository-path>");
+  if (!process.env.IMAGES_PATH) {
+    console.error("Please specify the path to the images repository using the IMAGES_PATH environment variable or as a command line argument.");
     process.exit(1);
   }
 
-  const images = await findImages(repositoryPath);
+  if (!process.env.JSONS_PATH) {
+    console.error("Please specify the path to the output JSONs repository using the JSONS_PATH environment variable.");
+    process.exit(1);
+  }
+
+  const images = await findImages(process.env.IMAGES_PATH);
 
   if (images.length === 0) {
     console.log("No images found.");
@@ -102,7 +106,7 @@ async function main() {
     }
 
     // replace the .png or .jpg extension with .json
-    const outputPath = image.replace(/\.(png|jpg|jpeg)$/i, ".json");
+    const outputPath = path.join(process.env.JSONS_PATH, path.basename(image).replace(/\.(png|jpg|jpeg)$/i, ".json"));
     await Bun.write(outputPath, JSON.stringify(result, null, 2));
   }
 }
