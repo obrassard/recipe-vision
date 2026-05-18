@@ -4,9 +4,18 @@ import { renderPdfFromPage, withPdfPage } from "./pdf";
 import { renderRecipeHtml } from "./template";
 import { parseRecipe } from "./types";
 
-function resolveOutputPath(inputPath: string, outputDirectory: string): string {
-  const parsed = path.parse(inputPath);
-  return path.resolve(outputDirectory, `${parsed.name}.pdf`);
+function toSafeFileName(value: string): string {
+  return value
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .toLowerCase();
+}
+
+function resolveOutputPath(recipeTitle: string, outputDirectory: string): string {
+  const safeFileName = toSafeFileName(recipeTitle) || "recipe";
+  return path.resolve(outputDirectory, `${safeFileName}.pdf`);
 }
 
 async function main(): Promise<void> {
@@ -40,11 +49,11 @@ async function main(): Promise<void> {
   await withPdfPage(async (page) => {
     for (const fileName of jsonFiles) {
       const inputPath = path.join(inputDirectory, fileName);
-      const outputPath = resolveOutputPath(inputPath, outputDirectory);
 
       try {
         const rawRecipe = await Bun.file(inputPath).json();
         const recipe = parseRecipe(rawRecipe);
+        const outputPath = resolveOutputPath(recipe.title, outputDirectory);
         const html = renderRecipeHtml(recipe);
 
         await renderPdfFromPage(page, html, outputPath);

@@ -1,5 +1,12 @@
 import type { Recipe } from "./types";
 
+type RecipeSection = {
+  title: string | null;
+  items: string[];
+};
+
+const SECTION_MARKER_PATTERN = /^\[(.+)\]$/;
+
 function escapeHtml(value: string): string {
   return value
     .replaceAll("&", "&amp;")
@@ -9,19 +16,75 @@ function escapeHtml(value: string): string {
     .replaceAll("'", "&#39;");
 }
 
+function getSectionTitle(item: string): string | null {
+  const match = item.trim().match(SECTION_MARKER_PATTERN);
+  return match ? match[1].trim() : null;
+}
+
+function splitIntoSections(items: string[]): RecipeSection[] {
+  const sections: RecipeSection[] = [];
+  let currentSection: RecipeSection = { title: null, items: [] };
+
+  for (const item of items) {
+    const sectionTitle = getSectionTitle(item);
+
+    if (sectionTitle !== null) {
+      if (currentSection.title !== null || currentSection.items.length > 0) {
+        sections.push(currentSection);
+      }
+
+      currentSection = {
+        title: sectionTitle,
+        items: [],
+      };
+      continue;
+    }
+
+    currentSection.items.push(item);
+  }
+
+  if (currentSection.title !== null || currentSection.items.length > 0) {
+    sections.push(currentSection);
+  }
+
+  return sections;
+}
+
 function renderItems(items: string[], tagName: "ul" | "ol", className?: string): string {
-  const itemSpacing = tagName === "ol" ? "mb-3" : "mb-2";
+  const itemSpacing = tagName === "ol" ? "mb-2" : "mb-1/2";
   const itemMarkup = items
     .map((item) => `<li class="${itemSpacing} last:mb-0 break-inside-avoid [-webkit-column-break-inside:avoid] [page-break-inside:avoid]">${escapeHtml(item)}</li>`)
     .join("\n");
 
   const listClass =
     tagName === "ul"
-      ? "list-disc pl-5 text-[10.5pt] leading-5 text-stone-800"
-      : "list-decimal pl-5 text-[10.5pt] leading-5 text-stone-800";
+      ? "list-disc pl-5 text-[9pt] leading-5 text-stone-800"
+      : "list-decimal pl-5 text-[9pt] leading-5 text-stone-800";
 
   const classes = className ? `${listClass} ${className}` : listClass;
   return `<${tagName} class="${classes}">${itemMarkup}</${tagName}>`;
+}
+
+function renderSectionedItems(items: string[], tagName: "ul" | "ol", listClassName?: string): string {
+  const sections = splitIntoSections(items);
+
+  if (sections.length === 1 && sections[0]?.title === null) {
+    return renderItems(items, tagName, listClassName);
+  }
+
+  return sections
+    .filter((section) => section.items.length > 0)
+    .map((section) => {
+      const titleMarkup = section.title
+        ? `<h3 class="mb-3 text-[9pt] font-semibold uppercase tracking-[0.12em] text-teal-800">${escapeHtml(section.title)}</h3>`
+        : "";
+
+      return `<div class="mb-5 last:mb-0 break-inside-avoid [page-break-inside:avoid]">
+        ${titleMarkup}
+        ${renderItems(section.items, tagName, listClassName)}
+      </div>`;
+    })
+    .join("\n");
 }
 
 export function renderRecipeHtml(recipe: Recipe): string {
@@ -75,25 +138,25 @@ export function renderRecipeHtml(recipe: Recipe): string {
         <div class="flex items-start justify-between gap-6">
           <div>
             <p class="mb-2 text-[10pt] font-semibold uppercase tracking-[0.2em] text-teal-800">Recette</p>
-            <h1 class="text-[22pt] font-semibold leading-tight text-stone-900">${escapeHtml(recipe.title)}</h1>
+            <h1 class="text-[18pt] font-semibold leading-tight text-stone-900">${escapeHtml(recipe.title)}</h1>
           </div>
           ${portionsMarkup}
         </div>
       </header>
 
       <section class="recipe-section">
-        <h2 class="mb-4 text-[16pt] italic font-bold tracking-[0.05em] text-center text-teal-800">Ingrédients</h2>
-        ${renderItems(recipe.ingredients, "ul", "columns-2 gap-12 [column-fill:_balance]")}
+        <h2 class="mb-4 text-[13pt] italic font-bold tracking-[0.05em] text-center text-teal-800">Ingrédients</h2>
+        ${renderSectionedItems(recipe.ingredients, "ul", "columns-2 gap-12 [column-fill:_balance]")}
       </section>
 
       <section class="recipe-section mt-2">
-        <h2 class="mb-4 text-[16pt] italic font-bold tracking-[0.05em] text-center text-teal-800">Instructions</h2>
-        ${renderItems(recipe.instructions, "ol")}
+        <h2 class="mb-4 text-[13pt] italic font-bold tracking-[0.05em] text-center text-teal-800">Instructions</h2>
+        ${renderSectionedItems(recipe.instructions, "ol")}
       </section>
 
       <section class="recipe-section mt-1 rounded-lg border border-stone-200 p-4">
-        <h2 class="mb-2 text-[12pt] italic font-bold tracking-[0.05em] text-teal-800">Notes</h2>
-        <p class="text-[10.5pt] leading-5 text-stone-800">${note}</p>
+        <h2 class="mb-2 text-[11pt] italic font-bold tracking-[0.05em] text-teal-800">Notes</h2>
+        <p class="text-[10pt] leading-5 text-stone-800">${note}</p>
       </section>
     </main>
   </body>
