@@ -92,7 +92,7 @@ export function renderRecipeHtml(recipe: Recipe): string {
   const portionsMarkup =
     recipe.portions === null
       ? ""
-      : `<div class="shrink-0 rounded border border-stone-300 px-4 py-2 text-right">
+      : `<div class="shrink-0 rounded border border-teal-800/30 px-4 py-2 text-right">
             <p class="text-[9pt] uppercase tracking-[0.18em] text-teal-800">Portions</p>
             <p class="text-[12pt] font-medium text-stone-900">${recipe.portions} portion${recipe.portions > 1 ? "s" : ""}</p>
           </div>`;
@@ -134,7 +134,7 @@ export function renderRecipeHtml(recipe: Recipe): string {
   </head>
   <body class="bg-white text-stone-900 antialiased">
     <main class="mx-auto flex min-h-[10in] w-full max-w-none flex-col gap-5 bg-white px-8 py-6 font-serif">
-      <header class="border-b border-stone-300 pb-4">
+      <header class="border-b border-teal-800/30 pb-4">
         <div class="flex items-start justify-between gap-6">
           <div>
             <p class="mb-2 text-[10pt] font-semibold uppercase tracking-[0.2em] text-teal-800">Recette</p>
@@ -154,7 +154,7 @@ export function renderRecipeHtml(recipe: Recipe): string {
         ${renderSectionedItems(recipe.instructions, "ol")}
       </section>
 
-      <section class="recipe-section mt-1 rounded-lg border border-stone-200 p-4">
+      <section class="recipe-section mt-1 rounded-lg border border-teal-800/30 p-4">
         <h2 class="mb-2 text-[11pt] italic font-bold tracking-[0.05em] text-teal-800">Notes</h2>
         <p class="text-[10pt] leading-5 text-stone-800">${note}</p>
       </section>
